@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memoria 3</title>
+
+<style>
+
+body{
+    margin:0;
+    height:100vh;
+    background:black;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Arial;
+    color:white;
+}
+
+/* CONTENEDOR */
+#narrativa{
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+    align-items:center;
+}
+
+/* INPUT */
+input{
+    padding:12px;
+    width:280px;
+    border-radius:10px;
+    border:none;
+    outline:none;
+    font-size:1rem;
+}
+
+/* BOTÓN */
+button{
+    padding:12px 25px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:1rem;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+/* TEXTO FINAL */
+#final{
+    display:none;
+    opacity:0;
+    transition:2s ease;
+    max-width:600px;
+    line-height:1.6;
+    font-size:1.3rem;
+}
+
+/* OPCIONES FINALES */
+#finalOpciones{
+    display:none;
+    opacity:0;
+    margin-top:20px;
+    gap:15px;
+    transition:opacity 1.5s ease;
+}
+
+#finalOpciones button{
+    margin:5px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="narrativa">
+
+    <div id="pregunta">
+        <h2>¿Por qué nos vimos la primera vez?</h2>
+
+        <input type="text" id="respuesta" placeholder="Escribe aquí...">
+
+        <button id="enviar">Enviar</button>
+    </div>
+
+    <div id="final">
+        La pregunta no tiene respuesta correcta, solo queria que pensaras en como empezó nuestra relacion, bueno, cuando comenzamos a hablar porque segun tu, yo ya te gustaba de antes. Te quiero mucho, y amorcito, eres una persona maravillosa, recuerdo como desde la vez que postulaste a admision supe que te queria conocer mas, y como fue que un dia, sin yo verlo venir, ya eras mi centro de los dias jeje.
+    </div>
+
+    <div id="finalOpciones">
+        <button id="regresar">Regresar</button>
+        <button id="salir">Salir</button>
+    </div>
+
+</div>
+
+<script>
+
+const btn = document.getElementById("enviar");
+const pregunta = document.getElementById("pregunta");
+const final = document.getElementById("final");
+const opciones = document.getElementById("finalOpciones");
+
+btn.addEventListener("click", ()=>{
+
+    pregunta.style.opacity = "0";
+
+    setTimeout(()=>{
+
+        pregunta.style.display = "none";
+
+        final.style.display = "block";
+
+        setTimeout(()=>{
+            final.style.opacity = "1";
+        },100);
+
+        // después del texto aparecen opciones
+        setTimeout(()=>{
+
+            opciones.style.display = "flex";
+
+            setTimeout(()=>{
+                opciones.style.opacity = "1";
+            },100);
+
+        },2500);
+
+    },600);
+
+});
+
+/* BOTONES */
+document.getElementById("regresar").addEventListener("click",()=>{
+    window.location.href = "index.html#pantallaMemorias";
+});
+
+document.getElementById("salir").addEventListener("click",()=>{
+    window.location.href = "index.html";
+});
+
+</script>
+
+</body>
+</html>

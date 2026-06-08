@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Armando Recuerdos</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+
+body{
+    overflow:auto;
+}
+
+.contenedor{
+
+    max-width:900px;
+
+    margin:auto;
+
+    padding:20px;
+
+    text-align:center;
+
+    color:white;
+}
+
+#cronometro{
+
+    font-size:2rem;
+
+    margin:20px 0;
+}
+
+#puzzle{
+
+    width:min(90vw,640px);
+
+    height:min(90vw,640px);
+
+    margin:auto;
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    grid-template-rows:repeat(4,1fr);
+
+    border:3px solid white;
+}
+
+.pieza{
+
+    border:1px solid rgba(255,255,255,0.15);
+
+    background-image:url("img/puzzle.jpg");
+
+    background-size:400% 400%;
+
+    cursor:pointer;
+}
+
+.seleccionada{
+
+    outline:4px solid #ffd700;
+}
+
+button{
+
+    margin-top:20px;
+
+    padding:12px 25px;
+
+    cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <h1>🧩 Armando Recuerdos</h1>
+
+    <div id="cronometro">
+        00:00
+    </div>
+
+    <div id="puzzle"></div>
+
+    <button onclick="location.href='index.html'">
+        ← Volver
+    </button>
+
+</div>
+
+<script>
+
+const puzzle =
+document.getElementById("puzzle");
+
+const piezas = [];
+
+let seleccionada = null;
+
+const total = 16;
+
+let juegoTerminado = false;
+
+/* CRONOMETRO */
+
+let segundos = 0;
+
+const cronometro =
+document.getElementById("cronometro");
+
+setInterval(()=>{
+
+    segundos++;
+
+    const min =
+    Math.floor(segundos / 60);
+
+    const seg =
+    segundos % 60;
+
+    cronometro.textContent =
+
+    String(min).padStart(2,"0")
+    + ":"
+    +
+    String(seg).padStart(2,"0");
+
+},1000);
+
+/* CREAR PIEZAS */
+
+for(let fila=0; fila<4; fila++){
+
+    for(let columna=0; columna<4; columna++){
+
+        piezas.push({
+
+            correcta:
+            fila * 4 + columna,
+
+            fila,
+            columna
+
+        });
+
+    }
+
+}
+
+/* MEZCLAR */
+
+for(let i=piezas.length-1;i>0;i--){
+
+    const j =
+    Math.floor(
+    Math.random()*(i+1)
+    );
+
+    [piezas[i], piezas[j]] =
+    [piezas[j], piezas[i]];
+}
+
+/* DIBUJAR */
+
+function renderizar(){
+
+    puzzle.innerHTML="";
+
+    piezas.forEach((pieza,index)=>{
+
+        const div =
+        document.createElement("div");
+
+        div.classList.add("pieza");
+
+        if(seleccionada===index){
+
+            div.classList.add(
+            "seleccionada"
+            );
+        }
+
+        div.style.backgroundPosition =
+
+        `${pieza.columna * 100 / 3}% ${pieza.fila * 100 / 3}%`;
+
+        div.addEventListener("click",()=>{
+
+        if(juegoTerminado) return;
+
+        if(seleccionada===null){
+
+         seleccionada=index;
+
+        renderizar();
+
+        return;
+    }
+
+    [piezas[seleccionada],
+    piezas[index]]
+
+    =
+
+    [piezas[index],
+    piezas[seleccionada]];
+
+    seleccionada=null;
+
+    renderizar();
+
+    verificarVictoria();
+
+});
+
+        puzzle.appendChild(div);
+
+    });
+
+}
+
+function verificarVictoria(){
+
+    for(let i=0;i<piezas.length;i++){
+
+        if(piezas[i].correcta !== i){
+
+            return;
+        }
+
+    }
+
+    juegoTerminado = true;
+
+    mostrarPantallaFinal();
+
+}
+
+function mostrarPantallaFinal(){
+
+    document.body.innerHTML = `
+
+    <div style="
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    color:white;
+    padding:30px;
+    ">
+
+        <h1>
+        Muy bien amorcito ❤️
+        </h1>
+
+        <p>
+        Terminaste el rompecabezas en:
+        ${cronometro.textContent}
+        </p>
+
+        <h2>
+        ¿Quieres ver lo que sigue?
+        </h2>
+
+        <div style="margin-top:20px;">
+
+            <button
+            onclick="mostrarMensaje()"
+            style="
+            padding:12px 25px;
+            margin:10px;
+            ">
+
+            Sí
+
+            </button>
+
+            <button
+            onclick="location.href='index.html'"
+            style="
+            padding:12px 25px;
+            margin:10px;
+            ">
+
+            No
+
+            </button>
+
+        </div>
+
+    </div>
+
+    `;
+
+}
+
+function mostrarMensaje(){
+
+    document.body.innerHTML = `
+
+    <div style="
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    color:white;
+    padding:30px;
+    ">
+
+        <h1>
+        ✨ Mensaje Especial ✨
+        </h1>
+
+        <p style="
+        max-width:700px;
+        margin-top:20px;
+        line-height:1.8;
+        ">
+
+        AQUÍ ESCRIBIRÉ MI MENSAJE
+
+        </p>
+
+        <img
+        src="img/final1.jpg"
+        style="
+        width:300px;
+        max-width:90%;
+        border-radius:15px;
+        margin-top:30px;
+        ">
+
+        <button
+        onclick="location.href='index.html'"
+        style="
+        margin-top:30px;
+        padding:12px 25px;
+        ">
+
+        Volver
+
+        </button>
+
+    </div>
+
+    `;
+
+}
+
+renderizar();
+
+</script>
+
+</body>
+</html>

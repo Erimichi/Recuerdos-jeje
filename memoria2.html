@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memoria 2</title>
+
+<style>
+
+body{
+    margin:0;
+    overflow:hidden;
+    background:black;
+    font-family:Arial, sans-serif;
+}
+
+#game{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+}
+
+#score{
+    position:absolute;
+    top:20px;
+    left:20px;
+    color:white;
+    font-size:2rem;
+    z-index:100;
+}
+
+#vidasUI{
+    position:absolute;
+    top:70px;
+    left:20px;
+    color:white;
+    font-size:1.5rem;
+    z-index:100;
+}
+
+#avion{
+    position:absolute;
+    width:90px;
+    bottom:40px;
+    left:50%;
+    transform:translateX(-50%);
+}
+
+.enemigo{
+    position:absolute;
+    width:70px;
+    height:70px;
+    object-fit:contain;
+}
+
+.disparo{
+    position:absolute;
+    width:8px;
+    height:25px;
+    border-radius:10px;
+    background:white;
+}
+
+#controles{
+    position:absolute;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:20px;
+    z-index:100;
+}
+
+#controles button{
+    font-size:2rem;
+    padding:10px 20px;
+}
+
+/* BOSS */
+#bossBar{
+    display:none;
+    position:absolute;
+    top:70px;
+    left:50%;
+    transform:translateX(-50%);
+    width:300px;
+    height:25px;
+    background:#333;
+    border-radius:20px;
+    overflow:hidden;
+    z-index:100;
+}
+
+#bossVida{
+    width:100%;
+    height:100%;
+    background:red;
+}
+
+.boss{
+    position:absolute;
+    width:180px;
+    top:40px;
+    transition:all 0.8s ease;
+}
+
+/* MENU */
+#menuFinal{
+    position:absolute;
+    inset:0;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    background:rgba(0,0,0,0.85);
+    z-index:999;
+    color:white;
+    gap:15px;
+}
+
+.menuBtn{
+    padding:15px 30px;
+    font-size:1.3rem;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+#textoFinal{
+    opacity:0;
+    transition:1s;
+    max-width:600px;
+    text-align:center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="game">
+
+    <div id="score">Puntos: 0</div>
+    <div id="vidasUI">❤️❤️❤️</div>
+
+    <div id="bossBar">
+        <div id="bossVida"></div>
+    </div>
+
+    <img src="img/avion.png" id="avion">
+
+    <div id="controles">
+        <button id="izquierda">◀️</button>
+        <button id="disparar">💖</button>
+        <button id="derecha">▶️</button>
+    </div>
+
+    <div id="menuFinal">
+        <button class="menuBtn" id="btnContinuar">Continuar</button>
+        <button class="menuBtn" id="btnReiniciar">Reiniciar</button>
+        <div id="textoFinal">Holi mi amor, ¿cómo estás? 🌟 Esta un poco curioso estar haciendo esto cuando apenas aprendi este lenguaje de programación jeje. Pero bueno, en esta parte te quiero recordarte lo bonito que fue la vez que te ví por 2da vez, exactamente cuando decidiste ir a la pre uñac. Me alegró mucho el hecho de que no te hayas rendido, y más el poder verte, ocmo ya sabrás, me gustaste desde antes de verte. Evidentemente, sin ser obvio, me enamoraste cuando te fui a recoger en la universidad.</div>
+    </div>
+
+</div>
+
+<script>
+
+const game = document.getElementById("game");
+const avion = document.getElementById("avion");
+const scoreText = document.getElementById("score");
+const vidasUI = document.getElementById("vidasUI");
+
+let puntos = 0;
+let posicion = window.innerWidth / 2;
+
+let disparos = [];
+let enemigos = [];
+
+let vidas = 3;
+let gameOver = false;
+
+let boss = null;
+let bossActivo = false;
+let vidaBoss = 50;
+
+let bossX = window.innerWidth / 2;
+let bossDir = 1;
+
+/* VIDAS */
+function actualizarVidas(){
+    vidasUI.textContent = "❤️".repeat(vidas);
+}
+
+/* SCORE */
+function actualizarScore(){
+    scoreText.textContent = "Puntos: " + puntos;
+
+    if(puntos >= 1000 && !bossActivo){
+        crearBoss();
+    }
+}
+
+/* MOVIMIENTO AVION */
+function mover(){
+    avion.style.left = posicion + "px";
+}
+
+/* CONTROLES */
+document.getElementById("izquierda").onclick = ()=>{
+    posicion -= 40;
+    if(posicion < 50) posicion = 50;
+    mover();
+};
+
+document.addEventListener("keydown",(e)=>{
+
+    if(gameOver) return;
+
+    if(e.key === "a" || e.key === "A"){
+        posicion -= 40;
+        if(posicion < 50) posicion = 50;
+        mover();
+    }
+
+    if(e.key === "d" || e.key === "D"){
+        posicion += 40;
+        if(posicion > window.innerWidth - 50)
+            posicion = window.innerWidth - 50;
+
+        mover();
+    }
+
+    if(e.code === "Space"){
+        crearDisparo();
+    }
+});
+
+document.getElementById("derecha").onclick = ()=>{
+    posicion += 40;
+    if(posicion > window.innerWidth - 50)
+        posicion = window.innerWidth - 50;
+    mover();
+};
+
+/* DISPARO */
+document.getElementById("disparar").onclick = crearDisparo;
+
+function crearDisparo(){
+    const d = document.createElement("div");
+    d.className = "disparo";
+
+    d.style.left = posicion + "px";
+    d.style.bottom = "120px";
+
+    game.appendChild(d);
+    disparos.push(d);
+}
+
+/* ENEMIGOS */
+function crearEnemigo(){
+
+    if(gameOver) return;
+
+    const e = document.createElement("img");
+    e.src = "img/enemigo.png";
+    e.className = "enemigo";
+
+    e.style.left = Math.random() * (window.innerWidth - 80) + "px";
+    e.style.top = "-80px";
+
+    game.appendChild(e);
+    enemigos.push(e);
+}
+
+setInterval(crearEnemigo, 1200);
+
+/* BOSS */
+function crearBoss(){
+
+    bossActivo = true;
+    vidaBoss = 100;
+
+    document.getElementById("bossBar").style.display = "block";
+
+    boss = document.createElement("img");
+    boss.src = "img/boss.png";
+    boss.className = "boss";
+
+    boss.style.left = "-200px";
+    game.appendChild(boss);
+
+    setTimeout(()=>{
+        boss.style.left = (window.innerWidth/2 - 90) + "px";
+    },100);
+}
+
+/* CONFETI */
+function confeti(){
+
+    for(let i=0;i<80;i++){
+
+        const c = document.createElement("div");
+        c.style.position="absolute";
+        c.style.width="8px";
+        c.style.height="8px";
+        c.style.background=`hsl(${Math.random()*360},100%,50%)`;
+        c.style.left=Math.random()*window.innerWidth+"px";
+        c.style.top="-10px";
+
+        game.appendChild(c);
+
+        let y=0;
+
+        const a=setInterval(()=>{
+            y+=5;
+            c.style.top=y+"px";
+
+            if(y>window.innerHeight){
+                c.remove();
+                clearInterval(a);
+            }
+        },16);
+    }
+}
+
+/* GAME OVER */
+function gameOverScreen(){
+    gameOver = true;
+
+    document.body.innerHTML = `
+    <div style="color:white;background:black;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+        <h1>☠️ Game Over</h1>
+        <button onclick="location.reload()">Reiniciar</button>
+    </div>`;
+}
+
+/* MENU FINAL */
+const menuFinal = document.getElementById("menuFinal");
+const textoFinal = document.getElementById("textoFinal");
+
+document.getElementById("btnContinuar").onclick = ()=>{
+    textoFinal.style.opacity = 1;
+};
+
+document.getElementById("btnReiniciar").onclick = ()=>{
+    location.reload();
+};
+
+/* LOOP */
+function loop(){
+
+    if(gameOver) return;
+
+    /* DISPAROS */
+    for(let i=disparos.length-1;i>=0;i--){
+
+        const d=disparos[i];
+
+        let y=parseInt(d.style.bottom||120);
+        y+=12;
+        d.style.bottom=y+"px";
+
+        if(y>window.innerHeight){
+            d.remove();
+            disparos.splice(i,1);
+        }
+    }
+
+    /* ENEMIGOS */
+    for(let i=enemigos.length-1;i>=0;i--){
+
+        const e=enemigos[i];
+
+        let y=parseInt(e.style.top||-80);
+        y+=2;
+        e.style.top=y+"px";
+
+        const rAvion = avion.getBoundingClientRect();
+        const rE = e.getBoundingClientRect();
+
+        if(
+            rE.left < rAvion.right &&
+            rE.right > rAvion.left &&
+            rE.top < rAvion.bottom &&
+            rE.bottom > rAvion.top
+        ){
+            e.remove();
+            enemigos.splice(i,1);
+
+            vidas--;
+            actualizarVidas();
+
+            if(vidas<=0){
+                gameOverScreen();
+                return;
+            }
+        }
+
+        for(let j=disparos.length-1;j>=0;j--){
+
+            const d=disparos[j];
+
+            const r1=d.getBoundingClientRect();
+
+            if(
+                r1.left < rE.right &&
+                r1.right > rE.left &&
+                r1.top < rE.bottom &&
+                r1.bottom > rE.top
+            ){
+                e.remove();
+                d.remove();
+
+                enemigos.splice(i,1);
+                disparos.splice(j,1);
+
+                puntos+=100;
+                actualizarScore();
+            }
+        }
+    }
+
+    /* BOSS */
+    if(bossActivo && boss){
+
+        bossX += 4 * bossDir;
+
+        if(bossX > window.innerWidth-200 || bossX<0){
+            bossDir *= -1;
+        }
+
+        boss.style.left = bossX+"px";
+
+        for(let i=disparos.length-1;i>=0;i--){
+
+            const d=disparos[i];
+
+            const r1=d.getBoundingClientRect();
+            const rB=boss.getBoundingClientRect();
+
+            if(
+                r1.left < rB.right &&
+                r1.right > rB.left &&
+                r1.top < rB.bottom &&
+                r1.bottom > rB.top
+            ){
+                d.remove();
+                disparos.splice(i,1);
+
+                vidaBoss--;
+                document.getElementById("bossVida").style.width=vidaBoss+"%";
+
+                if(vidaBoss<=0){
+
+                    confeti();
+
+                    setTimeout(()=>{
+                        boss.remove();
+                        menuFinal.style.display="flex";
+                    },2000);
+                }
+            }
+        }
+    }
+
+    requestAnimationFrame(loop);
+}
+
+actualizarVidas();
+loop();
+
+</script>
+
+</body>
+</html>

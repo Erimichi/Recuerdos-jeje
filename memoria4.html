@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memoria 4</title>
+
+<style>
+
+body{
+    margin:0;
+    height:100vh;
+    background:#0b0b0f;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Arial;
+    overflow:hidden;
+    color:white;
+}
+
+/* PERRITO */
+#perrito{
+    width:180px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+/* TEXTO */
+#texto{
+    position:absolute;
+    top:18%;
+    text-align:center;
+    max-width:650px;
+    font-size:1.2rem;
+    opacity:0;
+    transition:1.5s;
+    line-height:1.6;
+}
+
+/* BOTONES FINAL */
+#opciones{
+    position:absolute;
+    bottom:10%;
+    display:flex;
+    gap:15px;
+    opacity:0;
+    transition:1.5s;
+}
+
+.btn{
+    padding:12px 20px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:1rem;
+    background:#ffffff15;
+    color:white;
+    backdrop-filter:blur(10px);
+    transition:0.3s;
+}
+
+.btn:hover{
+    transform:scale(1.08);
+    background:#ffffff25;
+}
+
+/* MINI PERRITOS */
+.mini{
+    position:absolute;
+    width:60px;
+    animation:flotar 2s ease-out forwards;
+}
+
+@keyframes flotar{
+    0%{
+        transform:scale(0.5);
+        opacity:1;
+    }
+    100%{
+        transform:translateY(-200px) scale(1);
+        opacity:0;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="texto">
+    Amorcitooo, oliii, Aquí quiero hacer enfasis en algo... recuerdas la vez que te pedi si querias ser mi enamorada? se que no fue como tu consideras correcto, pero recuerdas el momento? o cuando salimos de tu 3er examen de la pre? me gustaria volver a salir contigo a esas horas, al mismo lugar, y sobre todo, me gustaria volver a estar contigo. No importa el momento que leas esto, asi estemos peleados o juntos, siempre querre estar contigo jeje.
+</div>
+
+<div id="opciones">
+    <button class="btn" onclick="location.href='index.html#pantallaMemorias'">Regresar</button>
+    <button class="btn" onclick="location.href='index.html'">Cerrar</button>
+</div>
+
+<img src="img/boss.png" id="perrito">
+
+<script>
+
+const perrito = document.getElementById("perrito");
+const texto = document.getElementById("texto");
+const opciones = document.getElementById("opciones");
+
+let clicks = 0;
+
+perrito.addEventListener("click",()=>{
+
+    clicks++;
+
+    perrito.style.transform = "scale(0.9)";
+    setTimeout(()=>perrito.style.transform="scale(1)",100);
+
+    if(clicks === 20){
+        explotar();
+    }
+});
+
+function explotar(){
+
+    /* desaparecer perro */
+    perrito.style.transition = "0.5s";
+    perrito.style.transform = "scale(0)";
+    perrito.style.opacity = "0";
+
+    setTimeout(()=>{
+
+        perrito.remove();
+
+        /* mini perritos */
+        for(let i=0;i<40;i++){
+
+            const m = document.createElement("img");
+            m.src = "img/boss.png";
+            m.className = "mini";
+
+            m.style.left = Math.random()*window.innerWidth + "px";
+            m.style.top = Math.random()*window.innerHeight + "px";
+
+            document.body.appendChild(m);
+
+            setTimeout(()=>m.remove(),2500);
+        }
+
+        /* texto */
+        setTimeout(()=>{
+            texto.style.opacity = 1;
+        },1200);
+
+        /* opciones */
+        setTimeout(()=>{
+            opciones.style.opacity = 1;
+        },2000);
+
+    },500);
+}
+
+</script>
+
+</body>
+</html>
